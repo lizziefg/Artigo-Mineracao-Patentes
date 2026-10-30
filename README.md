@@ -70,7 +70,7 @@ Artigo-Mineracao-Patentes/
 ### 1. Clonar o Repositório e Instalar Dependências
 
 ```bash
-git clone https://github.com/<seu-usuario>/Artigo-Mineracao-Patentes.git
+git clone https://github.com/lizziefg/Artigo-Mineracao-Patentes.git
 cd Artigo-Mineracao-Patentes
 pip install -r requirements.txt
 ```
