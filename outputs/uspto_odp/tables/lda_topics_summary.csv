@@ -1,0 +1,10 @@
+﻿Tópico ID,Top 10 Termos,Termo Principal
+LDA_00,"model, training, node, sample, graph, vector, classification, dataset, label, domain",model
+LDA_01,"time, event, prediction, model, series, analysis, monitoring, anomaly, real, test",time
+LDA_02,"vehicle, sensor, video, point, frame, object, location, audio, control, user",vehicle
+LDA_03,"signal, quantum, circuit, control, cell, state, channel, line, qubit, frequency",signal
+LDA_04,"network, neural, layer, matrix, sequence, weight, operation, vector, block, deep",network
+LDA_05,"user, content, item, text, language, query, document, code, model, response",user
+LDA_06,"user, application, communication, service, resource, request, server, intelligence, artificial, message",user
+LDA_07,"image, object, target, region, map, model, detection, medical, pixel, imaging",image
+LDA_08,"model, learning, machine, parameter, training, trained, state, function, variable, target",model

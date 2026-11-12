@@ -1,0 +1,9 @@
+﻿Tópico ID,Top 10 Termos,Termo Principal
+LDA_00,"graph, network, neural, knowledge, convolutional, layer, node, prediction, vision, attention",graph
+LDA_01,"diffusion, latent, attention, network, generative, representation, transformer, architecture, cross, synthesis",diffusion
+LDA_02,"network, neural, model, language, transformer, control, graph, reinforcement, learning, attention",network
+LDA_03,"quantum, parameter, classical, model, machine, learning, gradient, descent, superconducting, executes",quantum
+LDA_04,"neural, deep, convolutional, network, via, weight, neuromorphic, spiking, synaptic, detection",neural
+LDA_05,"network, generative, neural, adversarial, synthesis, diffusion, discriminator, generator, accelerator, hardware",network
+LDA_06,"matrix, quantum, hardware, neural, training, accelerate, flux, partitioning, computational, convergence",matrix
+LDA_07,"learning, federated, privacy, differential, gradient, executes, weight, edge, distributed, server",learning

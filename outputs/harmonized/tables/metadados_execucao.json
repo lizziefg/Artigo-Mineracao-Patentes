@@ -1,0 +1,11 @@
+{
+  "dataset_label": "HARMONIZED",
+  "total_familias_reais": 162166,
+  "familias_elegiveis_ingles": 147983,
+  "amostra_estratificada_bruta": 19999,
+  "amostra_valida_pos_limpeza": 19998,
+  "k_topicos_bertopic": 9,
+  "outliers_hdbscan_n": 9697,
+  "outliers_hdbscan_pct": 48.49,
+  "random_state": 42
+}

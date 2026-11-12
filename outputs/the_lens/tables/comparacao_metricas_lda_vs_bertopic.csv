@@ -1,0 +1,3 @@
+﻿Modelo,Número de Tópicos (K),Topic Diversity (TD),Coerência Temática (UMass),Capacidade Contextual,Interpretabilidade,Tratamento de Ruído
+Baseline: Latent Dirichlet Allocation (LDA),9,0.7889,-2.1057,Bag of Words (Ausência de Semântica),Média (Sensível a Frequência),Estático (via Stopwords)
+Neural: BERTopic (Sentence Transformers + c-TF-IDF),9,0.7444,-2.2948,Alta (Embeddings Densos),Alta (c-TF-IDF por Cluster),Dinâmico (Isolamento via HDBSCAN)

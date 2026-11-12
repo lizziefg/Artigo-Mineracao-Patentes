@@ -1,0 +1,11 @@
+{
+  "dataset_label": "THE_LENS",
+  "total_familias_reais": 48370,
+  "familias_elegiveis_ingles": 34180,
+  "amostra_estratificada_bruta": 20000,
+  "amostra_valida_pos_limpeza": 19999,
+  "k_topicos_bertopic": 9,
+  "outliers_hdbscan_n": 8535,
+  "outliers_hdbscan_pct": 42.68,
+  "random_state": 42
+}

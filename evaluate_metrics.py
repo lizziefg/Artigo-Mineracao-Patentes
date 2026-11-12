@@ -9,7 +9,9 @@ from typing import Dict, List
 import numpy as np
 import pandas as pd
 
-from config import TABLES_DIR
+from config import HARMONIZED_OUTPUTS_DIR
+
+TABLES_DIR = HARMONIZED_OUTPUTS_DIR / "tables"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -75,7 +77,8 @@ class TopicEvaluator:
         docs: List[str],
         lda_topics: Dict[int, List[str]],
         bertopic_topics: Dict[int, List[str]],
-        output_filename: str = "comparacao_metricas_lda_vs_bertopic.csv"
+        output_filename: str = "comparacao_metricas_lda_vs_bertopic.csv",
+        tables_dir: Path | None = None,
     ) -> pd.DataFrame:
         """Gera a tabela comparativa oficial entre LDA e BERTopic para o TCC."""
         logger.info("Calculando métricas comparativas entre LDA e BERTopic...")
@@ -108,14 +111,16 @@ class TopicEvaluator:
         ]
         
         df_comp = pd.DataFrame(comparison_data)
-        csv_path = TABLES_DIR / output_filename
+        out_dir = Path(tables_dir) if tables_dir else TABLES_DIR
+        out_dir.mkdir(parents=True, exist_ok=True)
+        csv_path = out_dir / output_filename
         df_comp.to_csv(csv_path, index=False, encoding="utf-8-sig")
         
-        md_path = TABLES_DIR / output_filename.replace(".csv", ".md")
+        md_path = out_dir / output_filename.replace(".csv", ".md")
         with open(md_path, "w", encoding="utf-8") as f:
             f.write("# Comparação de Métricas: LDA (Baseline) vs BERTopic (Neural)\n\n")
             f.write(df_comp.to_markdown(index=False))
             f.write("\n\n*Nota: Valores de Topic Diversity mais próximos de 1.0 indicam menor redundância vocabular. Valores de UMass mais próximos de 0.0 indicam maior coerência contextual intramodelo.*\n")
             
-        logger.info(f"Relatório comparativo salvo em:\n  - CSV: {csv_path.name}\n  - Markdown: {md_path.name}")
+        logger.info(f"Relatório comparativo salvo em:\n  - CSV: {csv_path}\n  - Markdown: {md_path}")
         return df_comp

@@ -12,7 +12,10 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from config import BERTOPIC_CONFIG, FIGURES_DIR, TABLES_DIR, MODELS_DIR
+from config import BERTOPIC_CONFIG, HARMONIZED_OUTPUTS_DIR
+
+FIGURES_DIR = HARMONIZED_OUTPUTS_DIR / "figures"
+TABLES_DIR = HARMONIZED_OUTPUTS_DIR / "tables"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -22,8 +25,17 @@ class BERTopicPatentPipeline:
     Pipeline neural de modelagem temática para patentes de Inteligência Artificial (CPC G06N)
     utilizando a arquitetura BERTopic (Grootendorst, 2022; Zheng et al., 2025).
     """
-    def __init__(self, config: dict = None):
+    def __init__(
+        self,
+        config: dict = None,
+        tables_dir: Path | None = None,
+        figures_dir: Path | None = None,
+    ):
         self.config = config or BERTOPIC_CONFIG
+        self.tables_dir = Path(tables_dir) if tables_dir else TABLES_DIR
+        self.figures_dir = Path(figures_dir) if figures_dir else FIGURES_DIR
+        self.tables_dir.mkdir(parents=True, exist_ok=True)
+        self.figures_dir.mkdir(parents=True, exist_ok=True)
         self.topic_model = None
         self.topics = []
         self.probs = []
@@ -47,7 +59,12 @@ class BERTopicPatentPipeline:
                 f"Executando motor em modo de alta portabilidade com c-TF-IDF / Decomposição Latente ({e})."
             )
 
-    def fit_transform(self, docs: List[str], timestamps: Optional[List[int]] = None) -> Tuple[List[int], Optional[np.ndarray]]:
+    def fit_transform(
+        self,
+        docs: List[str],
+        timestamps: Optional[List[int]] = None,
+        embeddings_cache_path: Optional[Path] = None,
+    ) -> Tuple[List[int], Optional[np.ndarray]]:
         """Executa o ajuste do modelo BERTopic sobre os resumos patentários higienizados."""
         self.docs = docs
         self.timestamps = timestamps or []
@@ -60,17 +77,35 @@ class BERTopicPatentPipeline:
             from hdbscan import HDBSCAN
 
             embedding_model = SentenceTransformer(self.config["embedding_model"])
+            embeddings = None
+            if embeddings_cache_path and Path(embeddings_cache_path).exists():
+                cached = np.load(embeddings_cache_path)
+                if len(cached) == len(docs):
+                    embeddings = cached
+                    logger.info(f"Embeddings carregados do cache ({embeddings_cache_path.name}): {embeddings.shape}")
+
+            if embeddings is None:
+                batch_size = self.config.get("encode_batch_size", 128)
+                logger.info(f"Gerando embeddings densos ({self.config['embedding_model']}, batch_size={batch_size})...")
+                embeddings = embedding_model.encode(docs, batch_size=batch_size, show_progress_bar=True)
+                if embeddings_cache_path:
+                    Path(embeddings_cache_path).parent.mkdir(parents=True, exist_ok=True)
+                    np.save(embeddings_cache_path, embeddings)
+                    logger.info(f"Embeddings salvos em cache: {embeddings_cache_path}")
+
             umap_model = UMAP(
                 n_neighbors=self.config["umap_n_neighbors"],
                 n_components=self.config["umap_n_components"],
+                min_dist=self.config.get("umap_min_dist", 0.0),
                 metric=self.config["umap_metric"],
-                random_state=42
+                random_state=self.config.get("random_state", 42)
             )
             hdbscan_model = HDBSCAN(
                 min_cluster_size=self.config["hdbscan_min_cluster_size"],
                 min_samples=self.config["hdbscan_min_samples"],
+                cluster_selection_method=self.config.get("hdbscan_cluster_selection_method", "leaf"),
                 metric=self.config["hdbscan_metric"],
-                prediction_data=True
+                prediction_data=self.config.get("calculate_probabilities", False)
             )
 
             self.topic_model = BERTopic(
@@ -82,7 +117,7 @@ class BERTopicPatentPipeline:
                 nr_topics=self.config["nr_topics"],
                 verbose=True
             )
-            self.topics, self.probs = self.topic_model.fit_transform(docs)
+            self.topics, self.probs = self.topic_model.fit_transform(docs, embeddings=embeddings)
             self.is_fitted = True
             logger.info("Ajuste nativo do BERTopic concluído com êxito.")
             return self.topics, self.probs
@@ -178,7 +213,7 @@ class BERTopicPatentPipeline:
 
     def _export_barchart(self, docs: List[str]):
         """Exporta gráfico de barras com as palavras-chave mais representativas por tópico."""
-        output_file = FIGURES_DIR / "bertopic_topics_barchart.html"
+        output_file = self.figures_dir / "bertopic_topics_barchart.html"
         if self.has_native_bertopic:
             try:
                 fig = self.topic_model.visualize_barchart(top_n_topics=8)
@@ -221,7 +256,7 @@ class BERTopicPatentPipeline:
 
     def _export_intertopic_distance_map(self):
         """Exporta mapa 2D de distância semântica e similaridade intertópicos."""
-        output_file = FIGURES_DIR / "bertopic_intertopic_distance_map.html"
+        output_file = self.figures_dir / "bertopic_intertopic_distance_map.html"
         if self.has_native_bertopic:
             try:
                 fig = self.topic_model.visualize_topics()
@@ -231,6 +266,7 @@ class BERTopicPatentPipeline:
             except Exception as e:
                 logger.warning(f"Fallback para mapa de distância via Plotly: {e}")
 
+        # Projeção bidimensional com TruncatedSVD dos centróides
         from sklearn.decomposition import TruncatedSVD
         info = self.topic_model.get_topic_info()
         valid_topics = [t for t in info["Topic"].tolist() if t != -1]
@@ -239,6 +275,7 @@ class BERTopicPatentPipeline:
             svd_2d = TruncatedSVD(n_components=2, random_state=42)
             coords_2d = svd_2d.fit_transform(self.cluster_embeddings)
         else:
+            # Posições simuladas em círculo caso não haja matriz direta
             n = len(valid_topics)
             angles = np.linspace(0, 2 * np.pi, n, endpoint=False)
             coords_2d = np.c_[np.cos(angles), np.sin(angles)]
@@ -246,6 +283,7 @@ class BERTopicPatentPipeline:
         sizes = [int(info[info["Topic"] == t]["Count"].values[0]) for t in valid_topics]
         names = [str(info[info["Topic"] == t]["Name"].values[0]) for t in valid_topics]
         
+        # Normalização de tamanho de bolha para o gráfico
         max_s = max(sizes) if sizes else 1
         bubble_sizes = [max(18, int((s / max_s) * 60)) for s in sizes]
 
@@ -279,13 +317,12 @@ class BERTopicPatentPipeline:
         logger.info(f"Mapa de distância intertópicos salvo em: {output_file.name}")
 
     def _export_topics_over_time(self, timestamps: Optional[List[int]]):
-        """Exporta gráfico de evolução dos tópicos (2019-2026)."""
-        output_file = FIGURES_DIR / "bertopic_topics_over_time.html"
-        
+        """Exporta gráfico de dispersão/linhas temporal da evolução dos tópicos (2019-2026)."""
+        output_file = self.figures_dir / "bertopic_topics_over_time.html"
+
         if not timestamps or len(timestamps) != len(self.topics):
-            years = np.random.choice(range(2019, 2027), size=len(self.topics))
-        else:
-            years = timestamps
+            raise ValueError("Timestamps reais obrigatórios para geração da evolução temporal.")
+        years = timestamps
 
         df_tot = pd.DataFrame({"Topic": self.topics, "Year": years})
         df_tot = df_tot[df_tot["Topic"] != -1]
@@ -320,7 +357,7 @@ class BERTopicPatentPipeline:
     def export_topics_table(self, filename: str = "bertopic_topics_summary.csv") -> pd.DataFrame:
         """Salva a tabela de tópicos do BERTopic com contagem e representações."""
         df_info = self.topic_model.get_topic_info()
-        output_path = TABLES_DIR / filename
+        output_path = self.tables_dir / filename
         df_info.to_csv(output_path, index=False, encoding="utf-8-sig")
         logger.info(f"Tabela de tópicos BERTopic salva em: {output_path.name}")
         return df_info

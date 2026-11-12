@@ -11,7 +11,9 @@ import pandas as pd
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
 
-from config import LDA_CONFIG, TABLES_DIR, MODELS_DIR
+from config import LDA_CONFIG, HARMONIZED_OUTPUTS_DIR
+
+TABLES_DIR = HARMONIZED_OUTPUTS_DIR / "tables"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -85,6 +87,7 @@ class LDABaselineModel:
         C_UMass(V) = sum_{m=2}^M sum_{l=1}^{m-1} log( (D(v_m, v_l) + 1) / D(v_l) )
         Valores mais próximos de zero indicam maior coerência temática.
         """
+        # Cria matriz binária de presença de termos por documento
         tokenized_docs = [set(t.split()) for t in texts]
         total_docs = len(tokenized_docs)
         if total_docs == 0:
@@ -113,7 +116,12 @@ class LDABaselineModel:
 
         return float(np.mean(coherence_scores)) if coherence_scores else 0.0
 
-    def export_topics_summary(self, top_words_dict: Dict[int, List[str]], filename: str = "lda_topics_summary.csv") -> pd.DataFrame:
+    def export_topics_summary(
+        self,
+        top_words_dict: Dict[int, List[str]],
+        filename: str = "lda_topics_summary.csv",
+        tables_dir: Path | None = None,
+    ) -> pd.DataFrame:
         """Salva resumo estruturado dos tópicos em CSV para tabelas do TCC."""
         records = []
         for topic_idx, words in top_words_dict.items():
@@ -123,7 +131,9 @@ class LDABaselineModel:
                 "Termo Principal": words[0] if words else ""
             })
         df = pd.DataFrame(records)
-        output_path = TABLES_DIR / filename
+        out_dir = Path(tables_dir) if tables_dir else TABLES_DIR
+        out_dir.mkdir(parents=True, exist_ok=True)
+        output_path = out_dir / filename
         df.to_csv(output_path, index=False, encoding="utf-8-sig")
-        logger.info(f"Tabela de tópicos LDA salva em: {output_path.name}")
+        logger.info(f"Tabela de tópicos LDA salva em: {output_path}")
         return df

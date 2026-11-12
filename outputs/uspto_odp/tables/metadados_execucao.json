@@ -1,0 +1,11 @@
+{
+  "dataset_label": "USPTO_ODP",
+  "total_familias_reais": 127274,
+  "familias_elegiveis_ingles": 127219,
+  "amostra_estratificada_bruta": 20000,
+  "amostra_valida_pos_limpeza": 19999,
+  "k_topicos_bertopic": 9,
+  "outliers_hdbscan_n": 8870,
+  "outliers_hdbscan_pct": 44.35,
+  "random_state": 42
+}

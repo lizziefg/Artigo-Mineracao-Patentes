@@ -1,0 +1,9 @@
+﻿Topic,Count,Name,Representation
+0,59,0_federated_privacy_differential,"['federated', 'privacy', 'differential', 'learning', 'edge', 'server', 'secure', 'local', 'distributed', 'gradient']"
+1,58,1_graph_knowledge_network,"['graph', 'knowledge', 'network', 'neural', 'neighborhood', 'prediction', 'node', 'layer', 'gcn', 'heterogeneous']"
+2,45,2_language_transformer_model,"['language', 'transformer', 'model', 'large', 'sequence', 'attention', 'rank', 'low', 'generative', 'head']"
+3,128,3_diffusion_quantum_learning,"['diffusion', 'quantum', 'learning', 'control', 'reinforcement', 'autonomous', 'classical', 'network', 'latent', 'synthesis']"
+4,57,4_spiking_neuromorphic_hardware,"['spiking', 'neuromorphic', 'hardware', 'synaptic', 'neural', 'event', 'crossbar', 'array', 'power', 'circuit']"
+5,62,5_convolutional_vision_deep,"['convolutional', 'vision', 'deep', 'network', 'layer', 'detection', 'image', 'temporal', 'object', 'segmentation']"
+6,27,6_discriminator_generator_adversarial,"['discriminator', 'generator', 'adversarial', 'generative', 'network', 'conditional', 'minimax', 'synthesizes', 'gan', 'synthetic']"
+7,34,7_quantum_convergence_flux,"['quantum', 'convergence', 'flux', 'annealer', 'hamiltonian', 'ising', 'spin', 'partitioning', 'encode', 'coupling']"
