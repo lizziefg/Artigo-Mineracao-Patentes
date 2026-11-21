@@ -117,4 +117,6 @@ BERTOPIC_CONFIG = {
     "calculate_probabilities": False,
     "nr_topics": 10,
     "random_state": 42,
+    "outlier_reduction_strategy": "c-tf-idf",
+    "outlier_reduction_threshold": 0.0,
 }

@@ -71,6 +71,32 @@ class TopicEvaluator:
 
         return float(np.mean(scores)) if scores else 0.0
 
+    @staticmethod
+    def calculate_cv_coherence(docs: List[str], topics_dict: Dict[int, List[str]], top_n: int = 10) -> float:
+        """
+        Calcula a Coerência Semântica C_v (Röder, Both e Hinneburg, 2015) utilizando o Gensim.
+        Combina NPMI sobre janelas deslizantes de contexto com similaridade de cosseno.
+        """
+        try:
+            from gensim.corpora.dictionary import Dictionary
+            from gensim.models.coherencemodel import CoherenceModel
+
+            tokenized_docs = [d.lower().split() for d in docs]
+            dictionary = Dictionary(tokenized_docs)
+            topics = [words[:top_n] for words in topics_dict.values() if len(words) >= 2]
+            if not topics:
+                return 0.0
+            cm = CoherenceModel(
+                topics=topics,
+                texts=tokenized_docs,
+                dictionary=dictionary,
+                coherence="c_v",
+            )
+            return float(cm.get_coherence())
+        except Exception as e:
+            logger.warning(f"Gensim indisponível ou falha no cálculo de C_v ({e}).")
+            return 0.0
+
     @classmethod
     def generate_comparison_report(
         cls,
@@ -85,28 +111,32 @@ class TopicEvaluator:
         
         lda_td = cls.calculate_topic_diversity(lda_topics, top_n=10)
         lda_umass = cls.calculate_umass_coherence(docs, lda_topics, top_n=10)
+        lda_cv = cls.calculate_cv_coherence(docs, lda_topics, top_n=10)
         
         bertopic_td = cls.calculate_topic_diversity(bertopic_topics, top_n=10)
         bertopic_umass = cls.calculate_umass_coherence(docs, bertopic_topics, top_n=10)
+        bertopic_cv = cls.calculate_cv_coherence(docs, bertopic_topics, top_n=10)
         
         comparison_data = [
             {
                 "Modelo": "Baseline: Latent Dirichlet Allocation (LDA)",
                 "Número de Tópicos (K)": len(lda_topics),
+                "Coerência Semântica (C_v)": round(lda_cv, 4),
+                "Coerência Intrínseca (C_UMass)": round(lda_umass, 4),
                 "Topic Diversity (TD)": round(lda_td, 4),
-                "Coerência Temática (UMass)": round(lda_umass, 4),
-                "Capacidade Contextual": "Bag of Words (Ausência de Semântica)",
+                "Representação Espacial": "Bag of Words (Ausência de Semântica)",
                 "Interpretabilidade": "Média (Sensível a Frequência)",
                 "Tratamento de Ruído": "Estático (via Stopwords)"
             },
             {
                 "Modelo": "Neural: BERTopic (Sentence Transformers + c-TF-IDF)",
                 "Número de Tópicos (K)": len(bertopic_topics),
+                "Coerência Semântica (C_v)": round(bertopic_cv, 4),
+                "Coerência Intrínseca (C_UMass)": round(bertopic_umass, 4),
                 "Topic Diversity (TD)": round(bertopic_td, 4),
-                "Coerência Temática (UMass)": round(bertopic_umass, 4),
-                "Capacidade Contextual": "Alta (Embeddings Densos)",
+                "Representação Espacial": "Embeddings Densos (all-MiniLM-L6-v2)",
                 "Interpretabilidade": "Alta (c-TF-IDF por Cluster)",
-                "Tratamento de Ruído": "Dinâmico (Isolamento via HDBSCAN)"
+                "Tratamento de Ruído": "Dinâmico (HDBSCAN leaf + c-TF-IDF)"
             }
         ]
         

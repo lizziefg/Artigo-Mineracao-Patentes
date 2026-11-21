@@ -1,0 +1,10 @@
+﻿Cluster,Designacao,Patentes,Participacao_Pct,Top_Termos_cTFIDF
+C0,C0: Modelos Preditivos e Otimização Geral,6198,30.99,"model, learning, machine, training, network, prediction, time"
+C1,C1: Visão Computacional e Reconhecimento de Imagem,3323,16.62,"image, object, video, network, model, target, frame"
+C2,C2: Processamento de Linguagem Natural e Recuperação Textual,3298,16.49,"user, content, text, language, model, query, entity"
+C3,C3: Detecção de Anomalias e Aprendizado Seguro,2134,10.67,"model, learning, transaction, anomaly, machine, detection, security"
+C4,"C4: Aplicações Médicas, Saúde e Bioinformática",1208,6.04,"patient, sensor, medical, model, sequence, health, disease"
+C5,C5: Circuitos de Aceleração e Hardware Neural,1560,7.8,"neural, network, layer, weight, circuit, operation, matrix"
+C6,C6: Navegação Autônoma e Veículos Inteligentes,980,4.9,"vehicle, driving, road, traffic, autonomous, sensor, control"
+C7,C7: Computação Quântica e Circuitos Ópticos,788,3.94,"quantum, qubit, optical, circuit, qubits, gate, state"
+C8,"C8: Reconhecimento de Áudio, Fala e Acústica",509,2.55,"audio, speech, signal, voice, sound, recognition, acoustic"

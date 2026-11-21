@@ -1,0 +1,3 @@
+﻿Modelo,Numero_Topicos_K,Topic_Diversity_TD,Coerencia_Cv,Coerencia_UMass,Representacao,Tratamento_Outliers
+Baseline: Latent Dirichlet Allocation (LDA),9,0.8444,0.5606,-2.5127,Bag of Words (frequência estática),Não aplicável (distribuição forçada)
+Neural: BERTopic (Transformers + c-TF-IDF),9,0.7778,0.5983,-2.4821,Embeddings Contextuais Densos,HDBSCAN + Reclassificação c-TF-IDF

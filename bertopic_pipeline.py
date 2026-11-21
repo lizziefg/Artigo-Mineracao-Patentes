@@ -118,6 +118,23 @@ class BERTopicPatentPipeline:
                 verbose=True
             )
             self.topics, self.probs = self.topic_model.fit_transform(docs, embeddings=embeddings)
+
+            # Etapa de Refinamento Metodológico: Redução de Dispersão e Outliers (HDBSCAN leaf + c-TF-IDF)
+            # Reclassifica os documentos rotulados como ruído (-1) pelo HDBSCAN nos clusters de máxima afinidade temática
+            outlier_strategy = self.config.get("outlier_reduction_strategy", "c-tf-idf")
+            if outlier_strategy:
+                threshold = self.config.get("outlier_reduction_threshold", 0.0)
+                raw_outliers = sum(1 for t in self.topics if t == -1)
+                logger.info(
+                    f"Executando redução de dispersão em {raw_outliers} outliers via '{outlier_strategy}' (threshold={threshold})..."
+                )
+                new_topics = self.topic_model.reduce_outliers(
+                    docs, self.topics, strategy=outlier_strategy, threshold=threshold
+                )
+                self.topic_model.update_topics(docs, topics=new_topics)
+                self.topics = new_topics
+                logger.info("Outliers reclassificados integralmente nos clusters consolidados.")
+
             self.is_fitted = True
             logger.info("Ajuste nativo do BERTopic concluído com êxito.")
             return self.topics, self.probs
